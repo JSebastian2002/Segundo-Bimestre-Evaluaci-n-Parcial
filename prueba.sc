@@ -12,19 +12,22 @@ val nTorneos = data.size
 
 println("El número de torneos en 2022 fue " + nTorneos)
 
-println("El nombre de los torneos jugados en 2022 es")
-data.map(x => x("tourney_name")).filter(!_.equals("")).distinct
+println("El nombre de los torneos jugados en 2022 es : " +
+  data.map(x => x("tourney_name")).filter(!_.equals("")).distinct)
 
-val prom = (valores : List[Double]) => valores.sum.toDouble/valores.length
-
+data.map(x => x("tourney_level")).filter(!_.equals("")).distinct
+val prom = (valores : List[Int]) => valores.sum.toDouble/valores.length
 //Análisis Exploratorio de Datos
-
-val playersinfo = data.map(row => row("players_info")).takeWhile(x => x != null).map(text => Json.parse(text))
+//hand
+val playersinfo = data.map(row => row("players_info")).map(text => Json.parse(text))
 val hand = playersinfo.flatMap(_ \\ "hand").groupBy {
   case nombre => nombre
-}.map(nombre => (nombre._1, nombre._2.size)).toList.sortBy(_._2)
+}.map(nombre => (nombre._1, nombre._2.size))
+  .toList.sortBy(_._2)
 println("Mano más usada: " + hand.maxBy(_._2)._1)
 println("Mano menos usada: " + hand.minBy(_._2)._1)
+
+//height
 
 val height = playersinfo.flatMap(_ \\ "height").groupBy {
   case nombre => nombre
@@ -34,7 +37,13 @@ val height = playersinfo.flatMap(_ \\ "height").groupBy {
 println("Altura más común: " + height.maxBy(_._2)._1)
 println("Altura menos común: " + height.minBy(_._2)._1)
 
-val matchinfo = data.map(row => row("match_info")).filter(!_.equals("")).map(text => Json.parse(text))
+val height2 = playersinfo.flatMap(_ \\ "height")
+
+
+//best of y minutes
+
+val matchinfo = data.map(row => row("match_info")).map(text => Json.parse(text)).filter(x => x != null)
+
 val bestOf = matchinfo.flatMap(_ \\ "best_of").groupBy {
   case nombre => nombre
 }.map {
@@ -44,25 +53,16 @@ println("Mayor best of: " + bestOf.maxBy(_._2)._1)
 println("Menor best of: " + bestOf.minBy(_._2)._1)
 
 
-val minutes = matchinfo.flatMap(_ \\ "minutes").groupBy {
+val minutes = matchinfo.flatMap(_ \\ "minutes").map(_.toString()).groupBy {
   case nombre => nombre
 }.map {
   case nombre => (nombre._1, nombre._2.size)
-}.toList.sortBy(_._2)
+}.toList.sortBy(_._2).reverse
 
-println("Cantidad de minutos más repetida: " + minutes.maxBy(_._2))
-println("Cantidad de minutos menos repetida: " + minutes.minBy(_._2))
-/*
-Histogram(hand)
-  .title("Manos más usadas")
-  .write(new File("/Users/andreflores//Downloads/hand.png"))
+println("Cantidad de minutos más usual: " + minutes.maxBy(_._2)._1)
+println("Cantidad de minutos menos usual: " + minutes.minBy(_._2)._1)
 
 
 
- */
-val d4 = playersinfo.flatMap(_ \\ "age").groupBy {
-  case nombre => nombre
-}.map {
-  case nombre => (nombre._1, nombre._2.size)
-}.toList.sortBy(_._2)
-println("Mano más usada: " + d4)
+
+
